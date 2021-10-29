@@ -1,0 +1,6 @@
+%{
+  "file_system": {:hex, :file_system, "0.2.10", "fb082005a9cd1711c05b5248710f8826b02d7d1784e7c3451f9c1231d4fc162d", [:mix], [], "hexpm", "41195edbfb562a593726eda3b3e8b103a309b733ad25f3d642ba49696bf715dc"},
+  "jason": {:hex, :jason, "1.2.2", "ba43e3f2709fd1aa1dce90aaabfd039d000469c05c56f0b8e31978e03fa39052", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "18a228f5f0058ee183f29f9eae0805c6e59d61c3b006760668d8d18ff0d12179"},
+  "mix_test_watch": {:hex, :mix_test_watch, "1.1.0", "330bb91c8ed271fe408c42d07e0773340a7938d8a0d281d57a14243eae9dc8c3", [:mix], [{:file_system, "~> 0.2.1 or ~> 0.3", [hex: :file_system, repo: "hexpm", optional: false]}], "hexpm", "52b6b1c476cbb70fd899ca5394506482f12e5f6b0d6acff9df95c7f1e0812ec3"},
+  "norm": {:hex, :norm, "0.13.0", "2c562113f3205e3f195ee288d3bd1ab903743e7e9f3282562c56c61c4d95dec4", [:mix], [{:stream_data, "~> 0.5", [hex: :stream_data, repo: "hexpm", optional: true]}], "hexpm", "447cc96dd2d0e19dcb37c84b5fc0d6842aad69386e846af048046f95561d46d7"},
+}
