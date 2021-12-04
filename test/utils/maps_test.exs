@@ -36,7 +36,11 @@ defmodule Lawn.Utils.MapsTest do
   end
 
   test "Struct delete_in" do
-    assert nil == Maps.delete_in_p(@bobs_neighbour, @bob_path)
-                    |> Maps.get_in_p(@bob_path)
+    li = [:a, :b, :c, :d]
+    all_but_last = Enum.slice(li, 0..-2)
+    assert all_but_last == [:a, :b, :c]
+    m = Maps.delete_in_p(@bobs_neighbour, [:address, :neighbours, :left, :first_name])
+    assert Maps.get_in_p(m, [:address, :neighbours, :left, :first_name]) == nil
+    assert Maps.get_in_p(m, [:address, :neighbours, :left]) == %{}
   end
 end

@@ -29,6 +29,34 @@ defmodule Lawn.Utils.QueryTest do
       assert Lawn.query(lawn, [:dog, "@current.dog_id", :energy]) == 100
     end
 
+    test "Filter clauses", %{lawn: lawn} do
+
+      assert Lawn.query(lawn, [
+        :dog,
+        {:owner_id, :in, [3, 1]},
+        :owner_id
+      ]) == [3, 1, 1, 1]
+
+      assert Lawn.query(lawn, [
+        :dog,
+        {:owner_id, :in, [1]},
+        :id
+      ]) == [3, 2, 1]
+
+      assert Lawn.query(lawn, [
+        :dog,
+        {:owner_id, 1},
+        :id
+      ]) == [3, 2, 1]
+
+      assert Lawn.query(lawn, [
+        :dog,
+        [owner_id: 1, energy: 100],
+        :id
+      ]) == [3, 2, 1]
+
+    end
+
 
   end
 end

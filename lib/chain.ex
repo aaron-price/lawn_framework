@@ -55,9 +55,16 @@ defmodule Lawn.Chain do
   def get_new_int_inp(:reset, _acc, chain), do: [%Lawn{}, chain]
   def get_new_int_inp(:keep, acc, chain), do:   [acc,     chain]
 
+  def reset_with_errors(pre_lawn, new_lawn) do
+    pre_lawn
+    |> Map.put(:status, new_lawn.status)
+    |> Map.put(:message, new_lawn.message)
+  end
+
   def process_all_interceptors(pre_lawn, chain, args) do
     Enum.reduce_while(chain.interceptors, pre_lawn, fn (interceptor, acc) ->
-      case interceptor.(acc, chain) do
+      intercept = interceptor.(acc, chain)
+      case intercept do
         # Default
         %Lawn{} = lawn ->                          {:cont, lawn}
         # {1,    2,     3}
@@ -65,9 +72,9 @@ defmodule Lawn.Chain do
         # 2: do we keep the current lawn, or get a new one? :keep | :reset
         # 3: The new accumulator. %Lawn{} | %Chain{} | [interceptor_fns]
         {:cont, :keep, %Lawn{} = lawn} ->          {:cont, lawn}
-        {:halt, :reset, %Lawn{}} ->                {:halt, pre_lawn}
+        {:halt, :reset, %Lawn{} = lawn} ->         {:halt, reset_with_errors(pre_lawn, lawn)}
         {:halt, :keep, %Lawn{} = lawn} ->          {:halt, lawn}
-        {:cont, :reset, %Lawn{}} ->                {:cont, pre_lawn}
+        {:cont, :reset, %Lawn{} = lawn} ->         {:cont, reset_with_errors(pre_lawn, lawn)}
 
         ## Process a new chain
         {:cont, :keep, %Lawn.Chain{} = new_chain} -> {:cont, process_chain(acc, new_chain, args)}

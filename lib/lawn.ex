@@ -52,6 +52,8 @@ defmodule Lawn do
     |> Lawn.new()
   end
 
+  def diff(lawn), do: Lawn.Utils.Maps.diff(lawn)
+
 
   @doc """
     mutate(%Lawn{}, (:put | :update | :merge | delete), List.t()) :: %Lawn{}
@@ -59,6 +61,16 @@ defmodule Lawn do
   """
   def mutate(lawn, cmd, path), do: Commands.mutate(lawn, cmd, path)
   def mutate(lawn, cmd, path, v), do: Commands.mutate(lawn, cmd, path, v)
+
+
+  def mutate_all(lawn, t, cmd, end_path, v) do
+    entities = __MODULE__.query(lawn, [t])
+
+    Enum.reduce(entities, lawn, fn {id, _entity}, acc ->
+      path = [t, id | end_path]
+      Commands.mutate(acc, cmd, path, v)
+    end)
+  end
 
 
   @doc """
@@ -103,17 +115,16 @@ defmodule Lawn do
       {:ok, size, &Enumerable.List.slice(li, &1, &2, size)}
     end
 
-    def reduce(lawn, acc, fun) do
-      case Enumerable.List.reduce(Lawn.db_to_list(lawn), acc, fun) do
-
-        {status, li} when is_list(li) -> {status, Lawn.list_to_db(li) |> elem(2)}
-
-        {status, {_table, _id, item}} -> {status, item}
-
-        x -> x
-
-      end
+    def reduce(_lawn, {:halt, acc}, _fun), do: {:halted, acc}
+    def reduce(lawn, {:suspend, acc}, fun), do: {:suspended, acc, &reduce(lawn, &1, fun)}
+    def reduce(lawn, {:cont, acc}, fun) do
+      li = Lawn.db_to_list(lawn)
+      reduce_lawn_li(li, {:cont, acc}, fun)
     end
+    def reduce_lawn_li([], {:cont, acc}, _fun), do: {:done, acc}
+    def reduce_lawn_li([head | tail], {:cont, acc}, fun), do: reduce_lawn_li(tail, fun.(head, acc), fun)
+    def reduce_lawn_li(li, {:halt, acc}, fun), do: reduce(li, {:halt, acc}, fun)
+    def reduce_lawn_li(li, {:suspend, acc}, fun), do: reduce(li, {:halt, acc}, fun)
   end
   ## Done Implementing Enumerable ##
   ##################################

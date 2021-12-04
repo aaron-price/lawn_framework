@@ -105,6 +105,7 @@ defmodule Lawn.Utils.CommandsTest do
       assert Commands.query(res, @bob_path, :pre_db) == "Bob"
     end
 
+
   end
 
 

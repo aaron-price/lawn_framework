@@ -23,7 +23,13 @@ defmodule Lawn.Utils.Maps do
   """
   def put_in_p(struct, li, v), do: get_and_update_in_struct(struct, li, fn _ -> v end)
   def update_in_p(struct, li, cb), do: get_and_update_in_struct(struct, li, cb)
-  def delete_in_p(struct, li), do: get_and_update_in_struct(struct, li, fn _ -> nil end)
+  def delete_in_p(struct, li) do
+    all_but_last = Enum.slice(li, 0..-2)
+    last = List.last(li)
+    get_and_update_in_struct(struct, all_but_last, fn m ->
+      Map.delete(m, last)
+    end)
+  end
 
   def get_in_p(end_result, []), do: end_result
   def get_in_p(struct, [hd | tl]) do
@@ -117,6 +123,32 @@ defmodule Lawn.Utils.Maps do
     {_, pre_path} = List.pop_at(path, -1)
     get_and_update_in_struct(db, pre_path, &(Map.delete(&1, last)) )
     |> deletes_in(deletes)
+  end
+
+
+  def diff(lawn) do
+    pre_lawn = Lawn.new(Map.get(lawn, :pre_db))
+    diff_li = Enum.reduce(lawn, [], fn ({table, id, row}, acc) ->
+      row_map = if is_struct(row), do: Map.from_struct(row), else: row
+
+      diff_row = Enum.reduce(row_map, %{}, fn
+        ({row_k, row_v}, row_acc) ->
+          pre_v = Lawn.query(pre_lawn, [table, id, row_k])
+          cond do
+            !is_number(row_v) or !is_number(pre_v) -> row_acc
+            row_v == pre_v -> row_acc
+            true -> Map.put(row_acc, row_k, row_v - pre_v)
+          end
+        (_, row_acc) -> row_acc
+      end)
+
+      cond do
+        Enum.empty?(diff_row) -> acc
+        true -> [{table, id, diff_row} | acc]
+      end
+    end)
+
+    Lawn.list_to_db(diff_li)
   end
 
 end

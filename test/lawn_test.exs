@@ -2,6 +2,15 @@ defmodule LawnTest do
   use ExUnit.Case
   doctest Lawn
 
+  @bobs_neighbour %Lawn.User{
+    name: "",
+    address: %{
+      neighbours: %{left: %{first_name: "Bob"}, right: %{}},
+      city: "",
+      number: 0
+    }
+  }
+
   test "Lawn Struct Setup" do
     l = Lawn.new(%{
       user: %{5 => %{foo: 8}, 1 => %{foo: 123}},
@@ -33,7 +42,7 @@ defmodule LawnTest do
       },
       post: %{26 => %{owner_id: 1, body: "Hello"}}
     })
-    li = Lawn.db_to_list(l)
+    #li = Lawn.db_to_list(l)
 
 
     #assert Enum.count(l) == 3
@@ -50,18 +59,32 @@ defmodule LawnTest do
       ({:user, _, %{foo: 8}}) -> true
       (_) -> false
     end)
-    assert foo8 == %{foo: 8}
+    assert foo8 == {:user, 5, %{foo: 8}}
 
-    #assert Enum.slice(li, 0..1) == Enum.slice(l, 0..1)
+  end
 
-    #queried = Enum.filter(l, fn
-    #  ({_table, 1, _}) -> true
-    #  (_) -> false
-    #end)
+  test "Lawn diffs" do
+    l = %Lawn{
+      db: %{
+        user: %{
+          1 => %{foo: 123},
+          5 => %{foo: 8},
+          8 => @bobs_neighbour
+        },
+        post: %{26 => %{owner_id: 1, body: "Hello"}}
+      },
+      pre_db: %{
+        user: %{
+          1 => %{foo: 23},
+          5 => %{foo: 8},
+          77 => %{foo: 77}
+        },
+        post: %{26 => %{owner_id: 1, body: "Hello"}}
+      }
+    }
+    assert Lawn.Utils.Maps.diff(l) == %{user: %{1 => %{foo: 100}}}
+    #assert 123 == Enum.map(l, fn {_t, _id, row} -> row end)
 
-    #assert queried == [
-    #  {:user, 1, %{foo: 123}},
-    #]
   end
 
 end
